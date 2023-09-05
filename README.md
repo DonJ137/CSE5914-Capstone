@@ -17,4 +17,4 @@ valid parameters are:
     academic-career=ugrad (for undergrad only classes)
     subject=   (blank, or cse)
 
-A valid query would be:  https://content.osu.edu/classes/search?q=&campus=col&p=1&term=1222
+A valid query would be:  https://content.osu.edu/v2/classes/search?q=&campus=col&p=1&term=1222
