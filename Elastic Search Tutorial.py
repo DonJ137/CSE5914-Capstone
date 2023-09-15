@@ -4,7 +4,7 @@
 #Connect to ES Cluster
 from elasticsearch import Elasticsearch
 
-es = Elasticsearch("http://localhost:9200")
+es = Elasticsearch("http://elastic:ttf6n-dJr9VVhE62JUX=@localhost:9200")
 es.info().body
 
 
