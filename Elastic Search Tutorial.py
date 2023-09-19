@@ -11,14 +11,21 @@ es.info().body
 #Create an index for indexing documents
 mappings = {
         "properties": {
-            "Class Type": {"type": "text"},
-            "Class Number": {"type": "integer"},
+            #Equivalent to "academicGroup" in JSON file
+            #"Class Group": {"type": "text"},
+            #Equivalent to "catalogNumber" in JSON file
+            "Class Number": {"type": "text"},
+            #Equivalent to "title" in JSON file
             "Class Name": {"type": "text"},
-            "Class Summary": {"type": "text"},
+            #Equivalent to "description" in JSON file
+            "Class Description": {"type": "text"},
+            #Equivalent to "academicCareer" in JSON file
+            "Class Type": {"type": "text"},
     }
 }
 
-es.indices.create(index="classes", mappings=mappings)
+if not es.indices.exists(index="courses"):
+    es.indices.create(index="courses", mappings=mappings)
 
 
 #Get the information from the relevant url by making a request call to the API
@@ -27,5 +34,24 @@ import json
 
 url = "https://content.osu.edu/v2/classes/search?q=#CSE&campus=col&term=2023"
 r = requests.get(url)
-content = r.json()
-print(content)
+
+#Check if the request to the API was successful or not
+if r.status_code == 200:
+    json_data = r.json()
+    
+    #Extract the courses section from the JSON data
+    courses_data = json_data.get("data", {}).get("courses", [])
+    #Iterate through the courses and index each document
+    for course in courses_data:
+        document = {
+            #"Class Group": course['course']['academicGroup'],
+            "Class Number": course['course']['catalogNumber'],
+            "Class Name": course['course']['title'],
+            "Class Description": course['course']['description'],
+            "Class Type": course['course']['academicCareer'],
+        }
+        #Index the document in Elasticsearch
+        es.index(index="courses", document=document)
+        print(f"Indexed document: {document}")
+else:
+    print(f"Failed to fetch data from the API. Status code: {response.status_code}")
