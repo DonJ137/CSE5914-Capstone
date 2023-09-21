@@ -55,3 +55,42 @@ if r.status_code == 200:
         print(f"Indexed document: {document}")
 else:
     print(f"Failed to fetch data from the API. Status code: {response.status_code}")
+
+# Define a query to search for class descriptions (you can adjust the query as needed)
+descriptionParam = "golf"
+
+description_query = {
+    "query": {
+        "match": {
+            "Class Description": descriptionParam  # Replace "searchParam" with the desired keyword
+        }
+    }
+}
+
+numberParam = "1"
+number_query = {
+    "query": {
+        "prefix": {
+            "Class Number": numberParam  # Replace "searchParam" with the desired keyword
+        }
+    }
+}
+
+# Perform the search
+response = es.search(index="courses", body=description_query)  # Use request_body
+#response = es.search(index="courses", body=number_query)  # Use request_body
+
+# Create a set to store unique class IDs
+unique_class_names = set()
+
+# Print search results without duplicates
+print("Search Results for", descriptionParam, "Classes:")
+for hit in response['hits']['hits']:
+    class_name = hit['_source']['Class Name']
+    if class_name not in unique_class_names:
+        class_description = hit['_source']['Class Description']
+        print(f"Class Name: {class_name}")
+        print(f"Class Description: {class_description}")
+        print("-----------------------")
+        # Add the class name to the set to mark it as processed
+        unique_class_names.add(class_name)
