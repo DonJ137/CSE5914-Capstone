@@ -4,7 +4,7 @@
 #Connect to ES Cluster
 from elasticsearch import Elasticsearch
 
-es = Elasticsearch("http://localhost:9200")
+es = Elasticsearch('https://localhost:9200', ca_certs="http_ca.crt", basic_auth=("elastic", "0eCjuIZGIrFNI09vhq9_"))
 es.info().body
 
 
@@ -32,7 +32,7 @@ if not es.indices.exists(index="courses"):
 import requests
 import json
 
-url = "https://content.osu.edu/v2/classes/search?q=#CSE&campus=col&term=2023"
+url = "https://content.osu.edu/v2/classes/search?q=cse&campus=col&term=1238"
 r = requests.get(url)
 
 #Check if the request to the API was successful or not
@@ -52,41 +52,34 @@ if r.status_code == 200:
         }
         #Index the document in Elasticsearch
         es.index(index="courses", document=document)
-        print(f"Indexed document: {document}")
+        # print(f"Indexed document: {document}")
 else:
-    print(f"Failed to fetch data from the API. Status code: {response.status_code}")
+    print(f"Failed to fetch data from the API. Status code: {r.status_code}")
 
-# Define a query to search for class descriptions (you can adjust the query as needed)
-descriptionParam = "golf"
+# Define a parameter to search for classes with a specific keyword in the description
+searchParam = "software"
 
-description_query = {
-    "query": {
-        "match": {
-            "Class Description": descriptionParam  # Replace "searchParam" with the desired keyword
-        }
+courseQuery = {
+    "match": {
+        # "query" : searchParam,
+        # "fields" : ["Class Name", "Class Description"]
+        "Class Description" : searchParam
     }
 }
 
-numberParam = "1"
-number_query = {
-    "query": {
-        "prefix": {
-            "Class Number": numberParam  # Replace "searchParam" with the desired keyword
-        }
-    }
-}
-
-# Perform the search
-response = es.search(index="courses", body=description_query)  # Use request_body
-#response = es.search(index="courses", body=number_query)  # Use request_body
+# Perform the search, using query rather than body since body is deprecated
+response = es.search(index="courses", query=courseQuery)  
 
 # Create a set to store unique class IDs
 unique_class_names = set()
 
 # Print search results without duplicates
-print("Search Results for", descriptionParam, "Classes:")
+print("Got %d Hits:" % response['hits']['total']['value'])
+# print(response['hits']['hits'])
+print("Search Results for", searchParam, "Classes:")
 for hit in response['hits']['hits']:
     class_name = hit['_source']['Class Name']
+    """
     if class_name not in unique_class_names:
         class_description = hit['_source']['Class Description']
         print(f"Class Name: {class_name}")
@@ -94,3 +87,10 @@ for hit in response['hits']['hits']:
         print("-----------------------")
         # Add the class name to the set to mark it as processed
         unique_class_names.add(class_name)
+    """
+    class_description = hit['_source']['Class Description']
+    print(f"Class Name: {class_name}")
+    print(f"Class Description: {class_description}")
+    print("-----------------------")
+    # Add the class name to the set to mark it as processed
+    unique_class_names.add(class_name)
