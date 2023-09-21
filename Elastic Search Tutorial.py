@@ -56,6 +56,8 @@ if r.status_code == 200:
 else:
     print(f"Failed to fetch data from the API. Status code: {r.status_code}")
 
+#From this point, run the code in either a different file or different cell!
+
 # Define a parameter to search for classes with a specific keyword in the description
 searchParam = "software"
 
