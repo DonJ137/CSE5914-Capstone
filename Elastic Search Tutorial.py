@@ -33,6 +33,7 @@ import requests
 import json
 
 url = "https://content.osu.edu/v2/classes/search?q=cse&campus=col&term=1238"
+url = "https://content.osu.edu/v2/classes/search?q=cse&campus=col&term=1238"
 r = requests.get(url)
 
 #Check if the request to the API was successful or not
