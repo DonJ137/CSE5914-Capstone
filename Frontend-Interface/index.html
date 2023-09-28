@@ -16,25 +16,38 @@
 </head>
 <body>
     <div class="container mt-5">
-        <h1 class="mb-4">Generic Frontend Interface</h1>
-        <form id="myForm">
-            <div class="mb-3">
-                <h1>Select a Major</h1>
-    
-                <select id="majorDropdown">
-                    <option value="" disabled selected>Select a major</option>
-                </select>
+        <h1 class="mb-4">OSU Schedule Generator</h1>
+        <div class="row">
+            <div class="col-md-6 border-end">
+                <form id="myForm">
+                    <div class="mb-3">
+                        <h2>Select a Major</h2>
+                        <select id="majorDropdown" class="form-select">
+                            <option value="" disabled selected>Select a major</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="textInterests" class="form-label">Enter any interests / hobbies (Comma separated):</label>
+                        <input type="text" class="form-control" id="textInterests" name="textInterests">
+                    </div>
+                    <button type="submit" class="btn btn-primary">Generate Schedule</button>
+                </form>
+            </div>
 
+            <div class="col-md-6">
+                <div id="generatedSchedules">
+                    <h2>Generated Schedules</h2>
+                    <p>CLAS 101: 8:00 AM - 9:30 AM</p>
+                    <p>CLAS 102: 10:00 AM - 11:30 AM</p>
+                </div>
             </div>
-            <div class="mb-3">
-                <label for="textInput" class="form-label">Enter some text:</label>
-                <input type="text" class="form-control" id="textInput" name="textInput">
-            </div>
-            <button type="submit" class="btn btn-primary">Submit</button>
-        </form>
+        </div>
     </div>
+    
 
-    <script type="module" src="scrape.mjs"></script>
+
+
+    <script type="module" src="scrape.js"></script>
     <script>
         const majorDropdown = document.getElementById("majorDropdown");
 
