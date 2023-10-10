@@ -14,7 +14,7 @@ mappings = {
             #Equivalent to "academicGroup" in JSON file
             #"Class Group": {"type": "text"},
             #Equivalent to "catalogNumber" in JSON file
-            "Class Number": {"type": "text"},
+            "Class Number": {"type": "int"},
             #Equivalent to "title" in JSON file
             "Class Name": {"type": "text"},
             #Equivalent to "description" in JSON file
@@ -32,7 +32,9 @@ if not es.indices.exists(index="courses"):
 import requests
 import json
 
-url = "https://content.osu.edu/v2/classes/search?q=cse&campus=col&term=1238"
+majorAbbreviation = "cse"
+# url = "https://content.osu.edu/v2/classes/search?q=cse&campus=col&term=1238"
+url = "https://content.osu.edu/v2/classes/search?q=" + majorAbbreviation + "&campus=col&term=1238"
 r = requests.get(url)
 
 #Check if the request to the API was successful or not
@@ -41,7 +43,7 @@ if r.status_code == 200:
     
     numberOfPages = json_data.get("data", {}).get("totalPages", int)
     currentPageNum = 1
-    urlPrefix = "https://content.osu.edu/v2/classes/search?q=cse&campus=col&term=1238&p="
+    urlPrefix = "https://content.osu.edu/v2/classes/search?q=" + majorAbbreviation + "&campus=col&term=1238&p="
     urlCurrent = urlPrefix + str(currentPageNum)
 
     while currentPageNum <= numberOfPages:
@@ -70,8 +72,13 @@ else:
 #From this point, run the code in either a different file or different cell!
 
 # Define a parameter to search for classes with a specific keyword in the description
+searchParams = []
+searchParams.append(majorAbbreviation + " 2")
+searchParams.append(majorAbbreviation + " 3")
+searchParams.append(majorAbbreviation + " 4")
+searchParams.append(majorAbbreviation + " 5")
 searchParam = "software"
-
+    
 courseQuery = {
     "match": {
         # "query" : searchParam,
@@ -91,10 +98,13 @@ print("Got %d Hits:" % len(response['hits']['hits']))
 print("Search Results for", searchParam, "Classes:")
 for hit in response['hits']['hits']:
     class_name = hit['_source']['Class Name']
+    class_number = int(hit['_source']['Class Number'])
     if class_name not in unique_class_names:
         class_description = hit['_source']['Class Description']
         print(f"Class Name: {class_name}")
         print(f"Class Description: {class_description}")
+        class_number = hit['_source']['Class Number']
+        print(f"Class Number: {class_number}")
         print("-----------------------")
         # Add the class name to the set to mark it as processed
         unique_class_names.add(class_name)
