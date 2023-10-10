@@ -14,7 +14,11 @@ mappings = {
             #Equivalent to "academicGroup" in JSON file
             #"Class Group": {"type": "text"},
             #Equivalent to "catalogNumber" in JSON file
-            "Class Number": {"type": "text"},
+            "Class Number": {"type": "text",
+                "fields": {
+                    "keyword": { "type": "keyword" }  # This creates a keyword sub-field
+                }
+            },
             #Equivalent to "title" in JSON file
             "Class Name": {"type": "text"},
             #Equivalent to "description" in JSON file
@@ -67,32 +71,52 @@ if r.status_code == 200:
 else:
     print(f"Failed to fetch data from the API. Status code: {r.status_code}")
 
-#From this point, run the code in either a different file or different cell!
+# Next cell here
 
 # Define a parameter to search for classes with a specific keyword in the description
 searchParam = "software"
 
 courseQuery = {
-    "match": {
-        # "query" : searchParam,
-        # "fields" : ["Class Name", "Class Description"]
-        "Class Description" : searchParam
-    }
+    "query": {
+        "match": {
+            "Class Description" : searchParam
+        }
+    },
+    "sort": [  # Add a sort parameter to sort by Class Number in ascending order
+        {
+            "Class Number.keyword": {  # Use the .keyword variant to sort text fields
+                "order": "asc"
+            }
+        }
+    ]
 }
 
-# Perform the search, using query rather than body since body is deprecated
-response = es.search(index="courses", query=courseQuery, size=100)  
+# Perform the search, increasing the size limit to ensure you capture more results if necessary
+response = es.search(index="courses", body=courseQuery, size=100)  
 
 # Create a set to store unique class IDs
 unique_class_names = set()
 
 # Print search results without duplicates
 print("Got %d Hits:" % len(response['hits']['hits']))
-print("Search Results for", searchParam, "Classes:")
+print("Search Results for", searchParam, "Classes Sorted by Course Number:")
+
+# Initialize a variable to keep track of the current level
+current_level = None
+
 for hit in response['hits']['hits']:
     class_name = hit['_source']['Class Name']
+    class_number = hit['_source']['Class Number']
+
+    # Check if we've moved to a new level
+    level = int(class_number[0]) * 1000
+    if current_level != level:
+        current_level = level
+        print("\n==== {} Level Classes ====\n".format(current_level))
+
     if class_name not in unique_class_names:
         class_description = hit['_source']['Class Description']
+        print(f"Class Number: {class_number}")
         print(f"Class Name: {class_name}")
         print(f"Class Description: {class_description}")
         print("-----------------------")
