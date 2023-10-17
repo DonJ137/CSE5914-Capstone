@@ -92,7 +92,7 @@ courseQuery = {
 }
 
 # Perform the search, increasing the size limit to ensure you capture more results if necessary
-response = es.search(index="courses", body=courseQuery, size=100)  
+response = es.search(index="courses", **courseQuery, size=100)  
 
 # Create a set to store unique class IDs
 unique_class_names = set()
