@@ -1,5 +1,11 @@
 #To run Elastic Search Locally: docker run --rm -p 9200:9200 -p 9300:9300 -e "xpack.security.enabled=false" -e "discovery.type=single-node" docker.elastic.co/elasticsearch/elasticsearch:8.9.0
 
+#Run 'pip install -r requirements.txt' to ensure all dependencies have been downloaded
+
+from flask import Flask, request, jsonify, render_template, send_from_directory
+
+# Create a Flask app instance
+app = Flask(__name__)
 
 #Connect to ES Cluster
 from elasticsearch import Elasticsearch
@@ -31,94 +37,114 @@ mappings = {
 if not es.indices.exists(index="courses"):
     es.indices.create(index="courses", mappings=mappings)
 
-
-#Get the information from the relevant url by making a request call to the API
 import requests
 import json
 
-url = "https://content.osu.edu/v2/classes/search?q=cse&campus=col&term=1238"
-r = requests.get(url)
 
-#Check if the request to the API was successful or not
-if r.status_code == 200:
-    json_data = r.json()
-    
-    numberOfPages = json_data.get("data", {}).get("totalPages", int)
-    currentPageNum = 1
-    urlPrefix = "https://content.osu.edu/v2/classes/search?q=cse&campus=col&term=1238&p="
-    urlCurrent = urlPrefix + str(currentPageNum)
+@app.route('/')
+def index():
+    return render_template('index.html')
 
-    while currentPageNum <= numberOfPages:
-        print(urlCurrent)
-        r = requests.get(urlCurrent)
+@app.route('/scrape.js')
+def send_js():
+    return send_from_directory('templates', 'scrape.js')
+
+@app.route('/majors.json')
+def send_json():
+    return send_from_directory('templates', 'majors.json')
+
+@app.route('/submit_form', methods=['POST'])
+def submit_form():
+    # Get data from the form
+    majorAbbreviation = request.form.get('majorDropdown')
+    interests = request.form.get('textInterests')
+
+    if majorAbbreviation is None or interests is None:
+        return jsonify(results="Major or interests not provided")
+
+    # Fetch data from the relevant URL by making a request call to the API
+    url = f"https://content.osu.edu/v2/classes/search?q={majorAbbreviation}&campus=col&term=1238"
+    r = requests.get(url)
+
+    if r.status_code == 200:
         json_data = r.json()
-        #Extract the courses section from the JSON data
-        courses_data = json_data.get("data", {}).get("courses", [])
-        #Iterate through the courses and index each document
-        for course in courses_data:
-            document = {
-                #"Class Group": course['course']['academicGroup'],
-                "Class Number": course['course']['catalogNumber'],
-                "Class Name": course['course']['title'],
-                "Class Description": course['course']['description'],
-                "Class Type": course['course']['academicCareer'],
-            }
-            #Index the document in Elasticsearch
-            es.index(index="courses", document=document)
-            # print(f"Indexed document: {document}", file=open('output.txt', 'a'))
-        currentPageNum += 1
+        numberOfPages = json_data.get("data", {}).get("totalPages", int)
+        currentPageNum = 1
+        urlPrefix = f"https://content.osu.edu/v2/classes/search?q={majorAbbreviation}&campus=col&term=1238&p="
         urlCurrent = urlPrefix + str(currentPageNum)
-else:
-    print(f"Failed to fetch data from the API. Status code: {r.status_code}")
 
-# Next cell here
+        while currentPageNum <= numberOfPages:
+            print(urlCurrent)
+            r = requests.get(urlCurrent)
+            json_data = r.json()
+            courses_data = json_data.get("data", {}).get("courses", [])
 
-# Define a parameter to search for classes with a specific keyword in the description
-searchParam = "software"
+            for course in courses_data:
+                document = {
+                    "Class Number": course['course']['catalogNumber'],
+                    "Class Name": course['course']['title'],
+                    "Class Description": course['course']['description'],
+                    "Class Type": course['course']['academicCareer'],
+                }
+                es.index(index="courses", document=document)
 
-courseQuery = {
-    "query": {
-        "match": {
-            "Class Description" : searchParam
-        }
-    },
-    "sort": [  # Add a sort parameter to sort by Class Number in ascending order
-        {
-            "Class Number.keyword": {  # Use the .keyword variant to sort text fields
-                "order": "asc"
-            }
-        }
-    ]
-}
+            currentPageNum += 1
+            urlCurrent = urlPrefix + str(currentPageNum)
+    else:
+        print(f"Failed to fetch data from the API. Status code: {r.status_code}")
 
-# Perform the search, increasing the size limit to ensure you capture more results if necessary
-response = es.search(index="courses", **courseQuery, size=100)  
+    # Define a parameter to search for classes with a specific keyword in the description
+    searchParams = []
+    searchParams.append(majorAbbreviation + " 2")
+    searchParams.append(majorAbbreviation + " 3")
+    searchParams.append(majorAbbreviation + " 4")
+    searchParams.append(majorAbbreviation + " 5")
+    searchParam = interests
 
-# Create a set to store unique class IDs
-unique_class_names = set()
+    courseQuery = {
+      "query": {
+          "match": {
+              "Class Description" : searchParam
+          }
+      },
+      "sort": [  # Add a sort parameter to sort by Class Number in ascending order
+          {
+              "Class Number.keyword": {  # Use the .keyword variant to sort text fields
+                  "order": "asc"
+              }
+          }
+      ]
+    }
 
-# Print search results without duplicates
-print("Got %d Hits:" % len(response['hits']['hits']))
-print("Search Results for", searchParam, "Classes Sorted by Course Number:")
+    # Perform the search, increasing the size limit to ensure you capture more results if necessary
+    response = es.search(index="courses", query=courseQuery, size=100)  
+    unique_class_names = set()
+    results = []
+    
+    # Initialize a variable to keep track of the current level
+    current_level = None
 
-# Initialize a variable to keep track of the current level
-current_level = None
-
-for hit in response['hits']['hits']:
-    class_name = hit['_source']['Class Name']
-    class_number = hit['_source']['Class Number']
-
-    # Check if we've moved to a new level
-    level = int(class_number[0]) * 1000
-    if current_level != level:
+    for hit in response['hits']['hits']:
+        class_name = hit['_source']['Class Name']
+        class_number = hit['_source']['Class Number']
+        
+        # Check if we've moved to a new level
+        level = int(class_number[0]) * 1000
+        if current_level != level:
         current_level = level
         print("\n==== {} Level Classes ====\n".format(current_level))
+        
+        if class_name is not None and class_number is not None and class_name not in unique_class_names:
+            class_description = hit['_source']['Class Description']
+            result = {
+                "Class Name": class_name,
+                "Class Description": class_description,
+                "Class Number": class_number
+            }
+            results.append(result)
+            unique_class_names.add(class_name)
 
-    if class_name not in unique_class_names:
-        class_description = hit['_source']['Class Description']
-        print(f"Class Number: {class_number}")
-        print(f"Class Name: {class_name}")
-        print(f"Class Description: {class_description}")
-        print("-----------------------")
-        # Add the class name to the set to mark it as processed
-        unique_class_names.add(class_name)
+    return jsonify(results=results)
+
+if __name__ == '__main__':
+    app.run(debug=True)
