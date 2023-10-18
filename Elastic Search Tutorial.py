@@ -59,6 +59,8 @@ def submit_form():
     majorAbbreviation = request.form.get('majorDropdown')
     interests = request.form.get('textInterests')
 
+    majorAbbreviation = "cse"
+
     if majorAbbreviation is None or interests is None:
         return jsonify(results="Major or interests not provided")
 
@@ -94,11 +96,6 @@ def submit_form():
         print(f"Failed to fetch data from the API. Status code: {r.status_code}")
 
     # Define a parameter to search for classes with a specific keyword in the description
-    searchParams = []
-    searchParams.append(majorAbbreviation + " 2")
-    searchParams.append(majorAbbreviation + " 3")
-    searchParams.append(majorAbbreviation + " 4")
-    searchParams.append(majorAbbreviation + " 5")
     searchParam = interests
 
     courseQuery = {
@@ -117,13 +114,14 @@ def submit_form():
     }
 
     # Perform the search, increasing the size limit to ensure you capture more results if necessary
-    response = es.search(index="courses", query=courseQuery, size=100)  
+    response = es.search(index="courses", body=courseQuery, size=100)  
     unique_class_names = set()
     results = []
     
     # Initialize a variable to keep track of the current level
     current_level = None
 
+    print("Search Results for", searchParam, "Classes Sorted by Course Number:")
     for hit in response['hits']['hits']:
         class_name = hit['_source']['Class Name']
         class_number = hit['_source']['Class Number']
@@ -131,8 +129,8 @@ def submit_form():
         # Check if we've moved to a new level
         level = int(class_number[0]) * 1000
         if current_level != level:
-        current_level = level
-        print("\n==== {} Level Classes ====\n".format(current_level))
+            current_level = level
+            print("\n==== {} Level Classes ====\n".format(current_level))
         
         if class_name is not None and class_number is not None and class_name not in unique_class_names:
             class_description = hit['_source']['Class Description']
@@ -141,6 +139,10 @@ def submit_form():
                 "Class Description": class_description,
                 "Class Number": class_number
             }
+            print(f"Class Number: {class_number}")
+            print(f"Class Name: {class_name}")
+            print(f"Class Description: {class_description}")
+            print("-----------------------")
             results.append(result)
             unique_class_names.add(class_name)
 
