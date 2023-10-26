@@ -146,7 +146,7 @@ def submit_form():
             results.append(result)
             unique_class_names.add(class_name)
 
-    return jsonify(results=results)
+    return render_template('submit_form.html', results=results, searchParam=searchParam)
 
 if __name__ == '__main__':
     app.run(debug=True)
