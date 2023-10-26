@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Search Results</title>
+</head>
+<body>
+    <h1>Search Results for {{ searchParam }} Classes Sorted by Course Number:</h1>
+    {% for result in results %}
+    <div>
+        <h2>Class Number: {{ result['Class Number'] }}</h2>
+        <p>Class Name: {{ result['Class Name'] }}</p>
+        <p>Class Description: {{ result['Class Description'] }}</p>
+        <button class="btn btn-primary add-to-schedule" data-class="{{ result['Class Number'] }}">Add to Schedule</button>
+    </div>
+    {% endfor %}
+</body>
+<a href="javascript:history.back()">Return to Home Page</a>
+</html>
