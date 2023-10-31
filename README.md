@@ -18,3 +18,5 @@ valid parameters are:
     subject=   (blank, or cse)
 
 A valid query would be:  https://content.osu.edu/v2/classes/search?q=&campus=col&p=1&term=1222
+
+For running the program, first run index_data.py and then run query_data.py afterwards.
