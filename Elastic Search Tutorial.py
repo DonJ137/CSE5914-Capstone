@@ -149,4 +149,4 @@ def submit_form():
     return render_template('submit_form.html', results=results, searchParam=searchParam)
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(debug=True, port=8001)
