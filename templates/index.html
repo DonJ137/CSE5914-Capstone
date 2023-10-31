@@ -12,6 +12,7 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.4.1/dist/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>    
     <script src="https://cdn.jsdelivr.net/npm/cheerio"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flask"></script>
     <title>OSU Schedule Generator</title>
 </head>
 <body>
@@ -27,9 +28,15 @@
                         </select>
                     </div>
                     <div class="mb-3">
-                        <label for="textInterests" class="form-label">Enter any interests / hobbies (Comma separated):</label>
+                        <label for="textInterests" class="form-label">What majors are you interested in:</label>
                         <input type="text" class="form-control" id="textInterests" name="textInterests">
                     </div>
+
+                    <div class="mb-3">
+                        <label for="GEInterests" class="form-label">What GEs are you interested in:</label>
+                        <input type="text" class="form-control" id="GEInterests" name="GEInterests">
+                    </div>
+
                     <button type="submit" class="btn btn-primary">Generate Schedule</button>
                 </form>
             </div>

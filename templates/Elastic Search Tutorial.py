@@ -1,6 +1,6 @@
 #To run Elastic Search Locally: docker run --rm -p 9200:9200 -p 9300:9300 -e "xpack.security.enabled=false" -e "discovery.type=single-node" docker.elastic.co/elasticsearch/elasticsearch:8.9.0
 
-#Run 'pip install -r requirements.txt' to ensure all dependencies have been downloaded
+#Run 'pip3 install -r requirements.txt' to ensure all dependencies have been downloaded
 
 from flask import Flask, request, jsonify, render_template, send_from_directory
 
@@ -55,10 +55,13 @@ def send_json():
 
 @app.route('/submit_form', methods=['POST'])
 def submit_form():
-    # Get data from the form
+
+    # Get data from the form (major, major interests, ge interests)
     majorAbbreviation = request.form.get('majorDropdown')
     interests = request.form.get('textInterests')
+    GEinterests = request.form.get('GEInterests')
 
+    # hardcoded major abbreviation
     majorAbbreviation = "cse"
 
     if majorAbbreviation is None or interests is None:
@@ -96,12 +99,14 @@ def submit_form():
         print(f"Failed to fetch data from the API. Status code: {r.status_code}")
 
     # Define a parameter to search for classes with a specific keyword in the description
-    searchParam = interests
+    searchParamMajorCourses = interests
+    SearchParamGECourses = GEinterests
 
-    courseQuery = {
+    # creating the query for major courses
+    courseQueryMajorCourses = {
       "query": {
           "match": {
-              "Class Description" : searchParam
+              "Class Description" : searchParamMajorCourses
           }
       },
       "sort": [  # Add a sort parameter to sort by Class Number in ascending order
@@ -113,15 +118,35 @@ def submit_form():
       ]
     }
 
+    # creating another query for GE courses
+    courseQueryGECourses = {
+      "query": {
+          "match": {
+              "Class Description" : SearchParamGECourses
+          }
+      },
+      "sort": [  # Add a sort parameter to sort by Class Number in ascending order
+          {
+              "Class Number.keyword": {  # Use the .keyword variant to sort text fields
+                  "order": "asc"
+              }
+          }
+      ]
+    }
+
+    ######## FOR MAJOR COURSES ######
+
+
+
     # Perform the search, increasing the size limit to ensure you capture more results if necessary
-    response = es.search(index="courses", body=courseQuery, size=100)  
-    unique_class_names = set()
-    results = []
+    response = es.search(index="courses", body=courseQueryMajorCourses, size=100)  
+    unique_class_names_Major = set()
+    majorResults = []
     
     # Initialize a variable to keep track of the current level
     current_level = None
 
-    print("Search Results for", searchParam, "Classes Sorted by Course Number:")
+    print("Search Results for Major Courses (param: ", searchParamMajorCourses, ") - Classes Sorted by Course Number:")
     for hit in response['hits']['hits']:
         class_name = hit['_source']['Class Name']
         class_number = hit['_source']['Class Number']
@@ -132,7 +157,7 @@ def submit_form():
             current_level = level
             print("\n==== {} Level Classes ====\n".format(current_level))
         
-        if class_name is not None and class_number is not None and class_name not in unique_class_names:
+        if class_name is not None and class_number is not None and class_name not in unique_class_names_Major:
             class_description = hit['_source']['Class Description']
             result = {
                 "Class Name": class_name,
@@ -143,10 +168,55 @@ def submit_form():
             print(f"Class Name: {class_name}")
             print(f"Class Description: {class_description}")
             print("-----------------------")
-            results.append(result)
-            unique_class_names.add(class_name)
+            majorResults.append(result)
+            unique_class_names_Major.add(class_name)
 
-    return render_template('submit_form.html', results=results, searchParam=searchParam)
+
+
+
+
+
+
+    ###### FOR GE COURSES #######
+
+    # Perform the search, increasing the size limit to ensure you capture more results if necessary
+    response = es.search(index="courses", body=courseQueryGECourses, size=100)  
+    unique_class_names_GE = set()
+    GEResults = []
+    
+    # Initialize a variable to keep track of the current level
+    current_level = None
+
+    print("Search Results for GE Courses (param: ", SearchParamGECourses, ") - Classes Sorted by Course Number:")
+    for hit in response['hits']['hits']:
+        class_name = hit['_source']['Class Name']
+        class_number = hit['_source']['Class Number']
+        
+        # Check if we've moved to a new level
+        level = int(class_number[0]) * 1000
+        if current_level != level:
+            current_level = level
+            print("\n==== {} Level Classes ====\n".format(current_level))
+        
+        if class_name is not None and class_number is not None and class_name not in unique_class_names_GE:
+            class_description = hit['_source']['Class Description']
+            result = {
+                "Class Name": class_name,
+                "Class Description": class_description,
+                "Class Number": class_number
+            }
+            print(f"Class Number: {class_number}")
+            print(f"Class Name: {class_name}")
+            print(f"Class Description: {class_description}")
+            print("-----------------------")
+            GEResults.append(result)
+            unique_class_names_GE.add(class_name)
+
+
+
+    # returning the 
+    return render_template('submit_form.html', majorResults=majorResults, searchParamMajorCourses=searchParamMajorCourses, 
+    GEResults=GEResults, SearchParamGECourses=SearchParamGECourses)
 
 if __name__ == '__main__':
     app.run(debug=True)
