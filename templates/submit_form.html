@@ -13,6 +13,16 @@
         <button class="btn btn-primary add-to-schedule" data-class="{{ result['Class Number'] }}">Add to Schedule</button>
     </div>
     {% endfor %}
+
+    <h2>Search Results for {{ genEdSearchParam }} Non-Major Classes Sorted by Course Number:</h2>
+    {% for result in genEdResults %}
+    <div>
+        <h2>Class Number: {{ result['Class Number'] }}</h2>
+        <p>Class Name: {{ result['Class Name'] }}</p>
+        <p>Class Description: {{ result['Class Description'] }}</p>
+        <button class="btn btn-primary add-to-schedule" data-class="{{ result['Class Number'] }}">Add to Schedule</button>
+    </div>
+    {% endfor %}
 </body>
 <a href="javascript:history.back()">Return to Home Page</a>
 </html>
