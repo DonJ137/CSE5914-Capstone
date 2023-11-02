@@ -19,16 +19,18 @@
         <h1 class="mb-4">OSU Schedule Generator</h1>
         <div class="row">
             <div class="col-md-6 border-end">
-                <div class="form-group">
-                    <label for="formControlRange">Number of Years:</label>
-                    <input type="range" 
-                      class="form-control-range" 
-                      min="1" max="4"
-                      id="formControlRange" 
-                      onChange="document.getElementById('rangeval').innerText = document.getElementById('formControlRange').value">
-                    <span id="rangeval">1<!-- Default value --></span>
-                </div>
+                
                   <form id="myForm" action="/submit_form" method="POST">
+                    <div class="form-group">
+                        <label for="numYears">Number of Years:</label>
+                        <input type="range" 
+                          class="form-control-range" 
+                          min="1" max="4"
+                          id="numYears"
+                          name="numYears"
+                          onChange="document.getElementById('rangeval').innerText = document.getElementById('formControlRange').value">
+                        <span id="rangeval">3<!-- Default value --></span>
+                    </div>
                     <div class="mb-3">
                         <h2>Select a Major</h2>
                         <select id="majorDropdown" name="majorDropdown" class="form-select">
@@ -38,6 +40,11 @@
                     <div class="mb-3">
                         <label for="textInterests" class="form-label">Enter any interests / hobbies (Comma separated):</label>
                         <input type="text" class="form-control" id="textInterests" name="textInterests">
+                    </div>
+                    <h3>Non Major</h3>
+                    <div class="mb-3">
+                        <label for="geInterests" class="form-label">Enter any interests / hobbies (Comma separated):</label>
+                        <input type="text" class="form-control" id="geInterests" name="geInterests">
                     </div>
                     <button type="submit" class="btn btn-primary">Generate Schedule</button>
                 </form>
