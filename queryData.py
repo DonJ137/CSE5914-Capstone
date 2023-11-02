@@ -21,6 +21,8 @@ def submit_form():
     # Get data from the form
     majorAbbreviation = request.form.get('majorDropdown')
     interests = request.form.get('textInterests')
+    numSemesters = request.form.get('numYears')
+    geInterests = request.form.get('geInterests')
 
     if majorAbbreviation is None or interests is None:
         return jsonify(results="Major or interests not provided")
