@@ -59,5 +59,6 @@ def index_data(majorAbbreviation):
 
 if __name__ == "__main__":
     create_index()
-    majorAbbreviation = "cse"  # This is just an example, replace it with the actual major abbreviation
-    index_data(majorAbbreviation)
+    majorList = ["CSE", "ISE", "ECE", "CHEM"] #List of Majors, add them as necessary
+    for i in majorList:
+        index_data(i)
