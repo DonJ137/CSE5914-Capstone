@@ -66,13 +66,26 @@ def submit_form():
             current_level = level
             print("\n==== {} Level Classes ====\n".format(current_level))
 
+        year_num = ""
+        if(class_number[0] == '1'):
+            year_num = "1st"
+        elif(class_number[0] == '2'):
+            year_num = "2nd"
+        elif(class_number[0] == '3'):
+            year_num = "3rd"
+        else:
+            year_num = "4th"
+
         if class_name is not None and class_number is not None and class_name not in unique_class_names:
             class_description = hit['_source']['Class Description']
             result = {
                 "Class Name": class_name,
                 "Class Description": class_description,
-                "Class Number": class_number
+                "Class Number": class_number,
+                "Year Number": year_num
             }
+            
+
             print(f"Class Number: {class_number}")
             print(f"Class Name: {class_name}")
             print(f"Class Description: {class_description}")
