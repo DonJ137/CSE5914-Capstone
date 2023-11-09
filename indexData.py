@@ -6,8 +6,6 @@ es = Elasticsearch('http://localhost:9200')
 
 mappings = {
     "properties": {
-            #Equivalent to "academicGroup" in JSON file
-            #"Class Group": {"type": "text"},
             #Equivalent to "catalogNumber" in JSON file
             "Class Number": {"type": "text",
                 "fields": {
@@ -20,6 +18,8 @@ mappings = {
             "Class Description": {"type": "text"},
             #Equivalent to "academicCareer" in JSON file
             "Class Type": {"type": "text"},
+            #Equivalent to "subject" in JSON file
+            "Major": {"type": "text"},
     }
 }
 
@@ -49,6 +49,7 @@ def index_data(majorAbbreviation):
                     "Class Name": course['course']['title'],
                     "Class Description": course['course']['description'],
                     "Class Type": course['course']['academicCareer'],
+                    "Major": course['course']['subject'],
                 }
                 es.index(index="courses", document=document)
 

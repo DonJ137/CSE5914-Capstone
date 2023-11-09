@@ -78,10 +78,12 @@ def submit_form():
 
         if class_name is not None and class_number is not None and class_name not in unique_class_names:
             class_description = hit['_source']['Class Description']
+            class_major = hit['_source']['Major']
             result = {
                 "Class Name": class_name,
                 "Class Description": class_description,
                 "Class Number": class_number,
+                "Major": class_major,
                 "Year Number": year_num
             }
             
@@ -89,6 +91,7 @@ def submit_form():
             print(f"Class Number: {class_number}")
             print(f"Class Name: {class_name}")
             print(f"Class Description: {class_description}")
+            print(f"Major: {class_major}")
             print("-----------------------")
             results.append(result)
             unique_class_names.add(class_name)
@@ -135,14 +138,17 @@ def submit_form():
 
         if class_name is not None and class_number is not None and class_name not in gen_ed_class_names:
             class_description = hit['_source']['Class Description']
+            class_major = hit['_source']['Major']
             result = {
                 "Class Name": class_name,
                 "Class Description": class_description,
-                "Class Number": class_number
+                "Class Number": class_number,
+                "Major": class_major,
             }
             print(f"Class Number: {class_number}")
             print(f"Class Name: {class_name}")
             print(f"Class Description: {class_description}")
+            print(f"Major: {class_major}")
             print("-----------------------")
             genEdResults.append(result)
             gen_ed_class_names.add(class_name)

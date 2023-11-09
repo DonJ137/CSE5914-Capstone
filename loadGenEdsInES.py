@@ -26,6 +26,8 @@ mappings = {
             "Class Description": {"type": "text"},
             #Equivalent to "academicCareer" in JSON file
             "Class Type": {"type": "text"},
+            #Equivalent to "subject" in JSON file
+            "Major": {"type": "text"},
     }
 }
 
@@ -58,6 +60,7 @@ if r.status_code == 200:
                 "Class Name": course['course']['title'],
                 "Class Description": course['course']['description'],
                 "Class Type": course['course']['academicCareer'],
+                "Major": course['course']['subject'],
             }
             es.index(index="geneds", document=document)
 
