@@ -10,6 +10,7 @@
         <h2>Class Number: {{ result['Class Number'] }}</h2>
         <p>Class Name: {{ result['Class Name'] }}</p>
         <p>Class Description: {{ result['Class Description'] }}</p>
+        <p>Major: {{ result['Major'] }}</p>
         <p>We recommend you add this to your {{result['Year Number']}} year.</p>
         <button class="btn btn-primary add-to-schedule" data-class="{{ result['Class Number'] }}">Add to Schedule</button>
     </div>
@@ -21,6 +22,7 @@
         <h2>Class Number: {{ result['Class Number'] }}</h2>
         <p>Class Name: {{ result['Class Name'] }}</p>
         <p>Class Description: {{ result['Class Description'] }}</p>
+        <p>Major: {{ result['Major'] }}</p>
         <button class="btn btn-primary add-to-schedule" data-class="{{ result['Class Number'] }}">Add to Schedule</button>
     </div>
     {% endfor %}
