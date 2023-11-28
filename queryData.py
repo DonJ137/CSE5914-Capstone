@@ -71,9 +71,9 @@ def submit_form():
             current_level = level
             print("\n==== {} Level Classes ====\n".format(current_level))
 
-        class_number_int = float(class_number)
+        class_number_int = float(class_number[0])
         year_num = 0
-        year_denominator = 5000 / numYears
+        year_denominator = 5 / numYears
         year_num = math.floor(class_number_int / year_denominator)
         if year_num == 0:
             year_num = 1
@@ -139,9 +139,9 @@ def submit_form():
             print("\n==== {} Level Classes ====\n".format(current_level))
 
         # Calculate the recommended year
-        class_number_int = float(class_number)
+        class_number_int = float(class_number[0])
         year_num = 0
-        year_denominator = 5000 / numYears
+        year_denominator = 5 / numYears
         year_num = math.floor(class_number_int / year_denominator)
         if year_num == 0:
             year_num = 1
