@@ -1,5 +1,6 @@
 from flask import Flask, request, jsonify, render_template, send_from_directory
 from elasticsearch import Elasticsearch
+import math
 
 app = Flask(__name__)
 es = Elasticsearch('http://localhost:9200')
@@ -21,7 +22,7 @@ def submit_form():
     # Get data from the form
     majorAbbreviation = request.form.get('majorDropdown')
     interests = request.form.get('textInterests')
-    numSemesters = request.form.get('numYears')
+    numYears = int(request.form.get('numYears'))
     geInterests = request.form.get('geInterests')
 
     if majorAbbreviation is None or interests is None:
@@ -66,15 +67,12 @@ def submit_form():
             current_level = level
             print("\n==== {} Level Classes ====\n".format(current_level))
 
-        year_num = ""
-        if(class_number[0] == '1'):
-            year_num = "1st"
-        elif(class_number[0] == '2'):
-            year_num = "2nd"
-        elif(class_number[0] == '3'):
-            year_num = "3rd"
-        else:
-            year_num = "4th"
+        class_number_int = float(class_number)
+        year_num = 0
+        year_denominator = 5000 / numYears
+        year_num = math.floor(class_number_int / year_denominator)
+        if year_num == 0:
+            year_num = 1
 
         if class_name is not None and class_number is not None and class_name not in unique_class_names:
             class_description = hit['_source']['Class Description']
@@ -136,6 +134,14 @@ def submit_form():
             current_level = level
             print("\n==== {} Level Classes ====\n".format(current_level))
 
+        # Calculate the recommended year
+        class_number_int = float(class_number)
+        year_num = 0
+        year_denominator = 5000 / numYears
+        year_num = math.floor(class_number_int / year_denominator)
+        if year_num == 0:
+            year_num = 1
+
         if class_name is not None and class_number is not None and class_name not in gen_ed_class_names:
             class_description = hit['_source']['Class Description']
             class_major = hit['_source']['Major']
@@ -144,6 +150,7 @@ def submit_form():
                 "Class Description": class_description,
                 "Class Number": class_number,
                 "Major": class_major,
+                "Year Number": year_num
             }
             print(f"Class Number: {class_number}")
             print(f"Class Name: {class_name}")
