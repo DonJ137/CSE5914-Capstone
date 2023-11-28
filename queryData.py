@@ -9,6 +9,10 @@ es = Elasticsearch('http://localhost:9200')
 def index():
     return render_template('index.html')
 
+@app.route('/generated_schedule.html')
+def schedule():
+    return render_template('generated_schedule.html')
+
 @app.route('/scrape.js')
 def send_js():
     return send_from_directory('templates', 'scrape.js')
