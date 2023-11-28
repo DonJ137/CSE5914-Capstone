@@ -60,6 +60,6 @@ def index_data(majorAbbreviation):
 
 if __name__ == "__main__":
     create_index()
-    majorList = ["CSE", "ISE", "ECE", "CHEM"] #List of Majors, add them as necessary
+    majorList = ["CSE", "ISE", "ECE", "CHEM", "AEROENG"] #List of Majors, add them as necessary
     for i in majorList:
         index_data(i)

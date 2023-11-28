@@ -33,6 +33,16 @@ def submit_form():
         return jsonify(results="Major or interests not provided")
     
     ### For Major Courses ###
+    
+    # Major Mappings 
+    if majorAbbreviation == "Computer Science and Engineering":
+        majorAbbreviation = "CSE"
+    elif majorAbbreviation == "Electrical and Computer Engineering":
+        majorAbbreviation = "ECE"
+    elif majorAbbreviation == "Aerospace Engineering":
+        majorAbbreviation = "AEROENG"
+    elif majorAbbreviation == "Chemistry":
+        majorAbbreviation = "CHEM"
 
     # Define a parameter to search for classes with a specific keyword in the description
     searchParam = interests
@@ -64,6 +74,7 @@ def submit_form():
     for hit in response['hits']['hits']:
         class_name = hit['_source']['Class Name']
         class_number = hit['_source']['Class Number']
+        class_major = hit['_source']['Major']
 
         # Check if we've moved to a new level
         level = int(class_number[0]) * 1000
@@ -78,9 +89,9 @@ def submit_form():
         if year_num == 0:
             year_num = 1
 
-        if class_name is not None and class_number is not None and class_name not in unique_class_names:
+        if class_name is not None and class_number is not None and class_name not in unique_class_names and class_major == majorAbbreviation:
             class_description = hit['_source']['Class Description']
-            class_major = hit['_source']['Major']
+            # class_major = hit['_source']['Major']
             result = {
                 "Class Name": class_name,
                 "Class Description": class_description,
