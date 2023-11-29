@@ -9,9 +9,17 @@ es = Elasticsearch('http://localhost:9200')
 def index():
     return render_template('index.html')
 
+class_data_storage = []  # A simple list to store class data
+
+@app.route('/add-to-schedule', methods=['POST'])
+def add_to_schedule():
+    data = request.get_json()
+    class_data_storage.append(data)
+    return jsonify({"message": "Class information added"})
+
 @app.route('/generated_schedule.html')
 def schedule():
-    return render_template('generated_schedule.html')
+    return render_template('generated_schedule.html', classes=class_data_storage)
 
 @app.route('/scrape.js')
 def send_js():

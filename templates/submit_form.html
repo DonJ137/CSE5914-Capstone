@@ -27,6 +27,38 @@
         <button class="btn btn-primary add-to-schedule" data-class="{{ result['Class Number'] }}">Add to Schedule</button>
     </div>
     {% endfor %}
+
+    <script>
+        document.querySelectorAll('.add-to-schedule').forEach(button => {
+            button.addEventListener('click', function() {
+                var classDiv = this.parentElement;
+                var classData = {
+                    classNumber: classDiv.querySelector("h2").innerText.split(": ")[1],
+                    className: classDiv.querySelectorAll("p")[0].innerText.split(": ")[1],
+                    classDescription: classDiv.querySelectorAll("p")[1].innerText.split(": ")[1],
+                    major: classDiv.querySelectorAll("p")[2].innerText.split(": ")[1],
+                    yearNumber: classDiv.querySelectorAll("p")[3].innerText.split("year ")[1].replace('.', '')
+                };
+    
+                // AJAX POST request to Flask
+                fetch('/add-to-schedule', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(classData),
+                })
+                .then(response => response.json())
+                .then(data => {
+                    alert("Class added to schedule!");
+                })
+                .catch((error) => {
+                    console.error('Error:', error);
+                });
+            });
+        });
+    </script>
+    
 </body>
 <a href="javascript:history.back()">Return to Home Page</a>
 </html>

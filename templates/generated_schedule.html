@@ -5,5 +5,16 @@
 </head>
 <body>
     <h1>The Generated Schedule</h1>
+    <div id="schedule-container">
+        {% for class in classes %}
+            <div>
+                <h3>Class Number: {{ class['classNumber'] }}</h3>
+                <p>Class Name: {{ class['className'] }}</p>
+                <p>Class Description: {{ class['classDescription'] }}</p>
+                <p>Major: {{ class['major'] }}</p>
+                <p>Recommended Year: {{ class['yearNumber'] }}</p>
+            </div>
+        {% endfor %}
+    </div>
 </body>
 </html>
