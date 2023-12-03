@@ -33,11 +33,11 @@
             button.addEventListener('click', function() {
                 var classDiv = this.parentElement;
                 var classData = {
-                    classNumber: classDiv.querySelector("h2").innerText.split(": ")[1],
-                    className: classDiv.querySelectorAll("p")[0].innerText.split(": ")[1],
-                    classDescription: classDiv.querySelectorAll("p")[1].innerText.split(": ")[1],
-                    major: classDiv.querySelectorAll("p")[2].innerText.split(": ")[1],
-                    yearNumber: classDiv.querySelectorAll("p")[3].innerText.split("year ")[1].replace('.', '')
+                    classNumber: extractTextAfterColon(classDiv.querySelector("h2").innerText),
+                    className: extractTextAfterColon(classDiv.querySelectorAll("p")[0].innerText),
+                    classDescription: extractTextAfterColon(classDiv.querySelectorAll("p")[1].innerText),
+                    major: extractTextAfterColon(classDiv.querySelectorAll("p")[2].innerText),
+                    yearNumber: extractTextAfterColon(classDiv.querySelectorAll("p")[3].innerText).replace('.', '')
                 };
     
                 // AJAX POST request to Flask
@@ -57,6 +57,10 @@
                 });
             });
         });
+    
+        function extractTextAfterColon(text) {
+            return text.substring(text.indexOf(':') + 1).trim();
+        }
     </script>
     
 </body>

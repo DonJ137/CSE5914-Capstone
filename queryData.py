@@ -17,6 +17,12 @@ def add_to_schedule():
     class_data_storage.append(data)
     return jsonify({"message": "Class information added"})
 
+@app.route('/remove-from-schedule/<class_number>', methods=['DELETE'])
+def remove_from_schedule(class_number):
+    global class_data_storage
+    class_data_storage = [c for c in class_data_storage if c['classNumber'] != class_number]
+    return jsonify({"message": "Class removed from schedule"})
+
 @app.route('/generated_schedule.html')
 def schedule():
     return render_template('generated_schedule.html', classes=class_data_storage)

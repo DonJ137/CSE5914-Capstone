@@ -7,14 +7,42 @@
     <h1>The Generated Schedule</h1>
     <div id="schedule-container">
         {% for class in classes %}
-            <div>
+            <div class="class-div">
                 <h3>Class Number: {{ class['classNumber'] }}</h3>
                 <p>Class Name: {{ class['className'] }}</p>
                 <p>Class Description: {{ class['classDescription'] }}</p>
                 <p>Major: {{ class['major'] }}</p>
                 <p>Recommended Year: {{ class['yearNumber'] }}</p>
+                <button class="remove-class-btn" data-class-number="{{ class['classNumber'] }}">Remove Class</button>
             </div>
         {% endfor %}
     </div>
+
+    <script>
+    document.querySelectorAll('.remove-class-btn').forEach(button => {
+    button.addEventListener('click', function() {
+        var classNumber = this.getAttribute('data-class-number');
+        removeClass(this, classNumber);
+    });
+    });
+
+    function removeClass(button, classNumber) {
+    // Existing code to remove the class element
+    var parentDiv = button.parentElement;
+    parentDiv.remove();
+
+    // Send DELETE request to Flask
+    fetch('/remove-from-schedule/' + classNumber, {
+        method: 'DELETE'
+    })
+    .then(response => response.json())
+    .then(data => {
+        alert("Class removed from schedule!");
+    })
+    .catch((error) => {
+        console.error('Error:', error);
+    });
+    }
+    </script>
 </body>
 </html>
