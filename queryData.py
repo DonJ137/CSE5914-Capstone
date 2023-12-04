@@ -65,13 +65,10 @@ def submit_form():
     interests = request.form.get('textInterests')
     numYears = int(request.form.get('numYears'))
     geInterests = request.form.get('geInterests')
-
-    if majorAbbreviation is None or interests is None:
-        return jsonify(results="Major or interests not provided")
     
     ### For Major Courses ###
     
-    # Major Mappings 
+    # Major Mappings, update with majors.json as necessary
     if majorAbbreviation == "Computer Science and Engineering":
         majorAbbreviation = "CSE"
     elif majorAbbreviation == "Electrical and Computer Engineering":

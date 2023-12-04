@@ -27,11 +27,10 @@
     });
 
     function removeClass(button, classNumber) {
-    // Existing code to remove the class element
     var parentDiv = button.parentElement;
     parentDiv.remove();
 
-    // Send DELETE request to Flask
+    // Send delete request to flask
     fetch('/remove-from-schedule/' + classNumber, {
         method: 'DELETE'
     })
