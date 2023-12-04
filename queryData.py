@@ -5,6 +5,29 @@ import math
 app = Flask(__name__)
 es = Elasticsearch('http://localhost:9200')
 
+def getRecommendedYear(class_number, numYears):
+    # Calculate the recommended year
+    temp_class_number = 0.0
+    for character in class_number:
+        if character.isalpha():
+            temp_class_number = float(class_number[:-1])
+            break
+    if (temp_class_number == 0.0):
+        temp_class_number = float(class_number)
+    class_number_int = temp_class_number
+    year_denominator = 5000 / numYears
+    year_num = math.floor(class_number_int / year_denominator)
+    year_num_string = str()
+    if year_num == 0:
+        year_num = 1
+    if year_num == 2 and numYears == 4:
+        year_num_string = "2 or 3"
+    else:
+        year_num_string = str(year_num)
+    if temp_class_number < 2500 and temp_class_number > 2000 and numYears == 4:
+        year_num_string = "1 or 2"
+    return year_num_string
+
 @app.route('/')
 def index():
     return render_template('index.html')
@@ -96,23 +119,8 @@ def submit_form():
             current_level = level
             print("\n==== {} Level Classes ====\n".format(current_level))
 
-        temp_class_number = 0.0
-        for character in class_number:
-            if character.isalpha():
-                temp_class_number = float(class_number[:-1])
-                break
-        if (temp_class_number == 0.0):
-            temp_class_number = float(class_number)
-        class_number_int = temp_class_number
-        year_denominator = 5000 / numYears
-        year_num = math.floor(class_number_int / year_denominator)
-        year_num_string = str()
-        if year_num == 0:
-            year_num = 1
-        if year_num == 2 and numYears == 4:
-            year_num_string = "2 or 3"
-        else:
-            year_num_string = str(year_num)
+        # Calculate the recommended year
+        year_num_string = getRecommendedYear(class_number, numYears)
 
         if class_name is not None and class_number is not None and class_name not in unique_class_names and class_major == majorAbbreviation:
             class_description = hit['_source']['Class Description']
@@ -175,23 +183,7 @@ def submit_form():
             print("\n==== {} Level Classes ====\n".format(current_level))
 
         # Calculate the recommended year
-        temp_class_number = 0.0
-        for character in class_number:
-            if character.isalpha():
-                temp_class_number = float(class_number[:-1])
-                break
-        if (temp_class_number == 0.0):
-            temp_class_number = float(class_number)
-        class_number_int = temp_class_number
-        year_denominator = 5000 / numYears
-        year_num = math.floor(class_number_int / year_denominator)
-        year_num_string = str()
-        if year_num == 0:
-            year_num = 1
-        if year_num == 2 and numYears == 4:
-            year_num_string = "2 or 3"
-        else:
-            year_num_string = str(year_num)
+        year_num_string = getRecommendedYear(class_number, numYears)
 
         if class_name is not None and class_number is not None and class_name not in gen_ed_class_names:
             class_description = hit['_source']['Class Description']
