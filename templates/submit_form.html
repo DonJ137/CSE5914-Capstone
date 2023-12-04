@@ -4,8 +4,8 @@
     <title>Search Results</title>
 </head>
 <body>
-    <h1>Search Results for {{ searchParam }} Classes Sorted by Course Number:</h1>
-    {% for result in results %}
+    <h1>Search Results for {{ majorSearchParam }} Classes Sorted by Course Number:</h1>
+    {% for result in majorResults  %}
     <div>
         <h2>Class Number: {{ result['Class Number'] }}</h2>
         <p>Class Name: {{ result['Class Name'] }}</p>
@@ -64,5 +64,4 @@
     </script>
     
 </body>
-<a href="javascript:history.back()">Return to Home Page</a>
 </html>

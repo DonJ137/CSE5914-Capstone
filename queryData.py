@@ -28,6 +28,61 @@ def getRecommendedYear(class_number, numYears):
         year_num_string = "1 or 2"
     return year_num_string
 
+def map_major_abbreviation(major_full_name):
+    # Add more mappings as necessary and update majors.json and indexAllData.py to reflect the list
+    major_abbreviations = {
+        "Computer Science and Engineering": "CSE",
+        "Electrical and Computer Engineering": "ECE",
+        "Aerospace Engineering": "AEROENG",
+        "Chemistry": "CHEM",
+    }
+    return major_abbreviations.get(major_full_name, major_full_name)
+
+def search_courses(index, search_param, major_abbreviation=None, num_years=None):
+    course_query = {
+        "query": {
+            "match": {
+                "Class Description": search_param
+            }
+        },
+        "sort": [
+            {
+                "Class Number.keyword": {
+                    "order": "asc"
+                }
+            }
+        ]
+    }
+    response = es.search(index=index, body=course_query, size=100)
+    unique_class_names = set()
+    results = []
+    current_level = None
+
+    for hit in response['hits']['hits']:
+        class_name = hit['_source']['Class Name']
+        class_number = hit['_source']['Class Number']
+        class_major = hit['_source'].get('Major', '')
+
+        level = int(class_number[0]) * 1000
+        if current_level != level:
+            current_level = level
+
+        year_num_string = getRecommendedYear(class_number, num_years) if num_years else 'any year'
+
+        if class_name and class_number and class_name not in unique_class_names and (not major_abbreviation or class_major == major_abbreviation):
+            class_description = hit['_source']['Class Description']
+            result = {
+                "Class Name": class_name,
+                "Class Description": class_description,
+                "Class Number": class_number,
+                "Major": class_major,
+                "Year Number": year_num_string
+            }
+            results.append(result)
+            unique_class_names.add(class_name)
+
+    return results
+
 @app.route('/')
 def index():
     return render_template('index.html')
@@ -50,157 +105,27 @@ def remove_from_schedule(class_number):
 def schedule():
     return render_template('generated_schedule.html', classes=class_data_storage)
 
-@app.route('/scrape.js')
-def send_js():
-    return send_from_directory('templates', 'scrape.js')
-
 @app.route('/majors.json')
 def send_json():
     return send_from_directory('templates', 'majors.json')
 
 @app.route('/submit_form', methods=['POST'])
 def submit_form():
-    # Get data from the form
     majorAbbreviation = request.form.get('majorDropdown')
     interests = request.form.get('textInterests')
     numYears = int(request.form.get('numYears'))
     geInterests = request.form.get('geInterests')
-    
-    ### For Major Courses ###
-    
-    # Major Mappings, update with majors.json as necessary
-    if majorAbbreviation == "Computer Science and Engineering":
-        majorAbbreviation = "CSE"
-    elif majorAbbreviation == "Electrical and Computer Engineering":
-        majorAbbreviation = "ECE"
-    elif majorAbbreviation == "Aerospace Engineering":
-        majorAbbreviation = "AEROENG"
-    elif majorAbbreviation == "Chemistry":
-        majorAbbreviation = "CHEM"
 
-    # Define a parameter to search for classes with a specific keyword in the description
-    searchParam = interests
+    # Map the major abbreviations to their full name
+    mapped_major_abbreviation = map_major_abbreviation(majorAbbreviation)
 
-    courseQuery = {
-        "query": {
-            "match": {
-                "Class Description": searchParam
-            }
-        },
-        "sort": [  # Add a sort parameter to sort by Class Number in ascending order
-            {
-                "Class Number.keyword": {  # Use the .keyword variant to sort text fields
-                    "order": "asc"
-                }
-            }
-        ]
-    }
+    # Search for Major Courses that have been indexed in Elastic Search
+    major_courses = search_courses("courses", interests, mapped_major_abbreviation, numYears)
 
-    # Perform the search, increasing the size limit to ensure you capture more results if necessary
-    response = es.search(index="courses", body=courseQuery, size=100)
-    unique_class_names = set()
-    results = []
+    # Do the same thing but for GenEds
+    gen_ed_courses = search_courses("geneds", geInterests, None, numYears)
 
-    # Initialize a variable to keep track of the current level
-    current_level = None
-
-    print("Search Results for", searchParam, "Classes Sorted by Course Number:")
-    for hit in response['hits']['hits']:
-        class_name = hit['_source']['Class Name']
-        class_number = hit['_source']['Class Number']
-        class_major = hit['_source']['Major']
-
-        # Check if we've moved to a new level
-        level = int(class_number[0]) * 1000
-        if current_level != level:
-            current_level = level
-            print("\n==== {} Level Classes ====\n".format(current_level))
-
-        # Calculate the recommended year
-        year_num_string = getRecommendedYear(class_number, numYears)
-
-        if class_name is not None and class_number is not None and class_name not in unique_class_names and class_major == majorAbbreviation:
-            class_description = hit['_source']['Class Description']
-            # class_major = hit['_source']['Major']
-            result = {
-                "Class Name": class_name,
-                "Class Description": class_description,
-                "Class Number": class_number,
-                "Major": class_major,
-                "Year Number": year_num_string
-            }
-            
-
-            print(f"Class Number: {class_number}")
-            print(f"Class Name: {class_name}")
-            print(f"Class Description: {class_description}")
-            print(f"Major: {class_major}")
-            print("-----------------------")
-            results.append(result)
-            unique_class_names.add(class_name)
-
-
-    ### For Gen Ed Courses ###
-
-    # Define a parameter to search for classes with a specific keyword in the description
-    genEdSearchParam = geInterests
-
-    genEdQuery = {
-        "query": {
-            "match": {
-                "Class Description": genEdSearchParam
-            }
-        },
-        "sort": [  # Add a sort parameter to sort by Class Number in ascending order
-            {
-                "Class Number.keyword": {  # Use the .keyword variant to sort text fields
-                    "order": "asc"
-                }
-            }
-        ]
-    }
-
-    # Perform the search, increasing the size limit to ensure you capture more results if necessary
-    response = es.search(index="geneds", body=genEdQuery, size=100)
-    gen_ed_class_names = set()
-    genEdResults = []
-
-    # Initialize a variable to keep track of the current level
-    current_level = None
-
-    print("Search Results for", genEdSearchParam, "Classes Sorted by Course Number:")
-    for hit in response['hits']['hits']:
-        class_name = hit['_source']['Class Name']
-        class_number = hit['_source']['Class Number']
-
-        # Check if we've moved to a new level
-        level = int(class_number[0]) * 1000
-        if current_level != level:
-            current_level = level
-            print("\n==== {} Level Classes ====\n".format(current_level))
-
-        # Calculate the recommended year
-        year_num_string = getRecommendedYear(class_number, numYears)
-
-        if class_name is not None and class_number is not None and class_name not in gen_ed_class_names:
-            class_description = hit['_source']['Class Description']
-            class_major = hit['_source']['Major']
-            result = {
-                "Class Name": class_name,
-                "Class Description": class_description,
-                "Class Number": class_number,
-                "Major": class_major,
-                "Year Number": year_num_string
-            }
-            print(f"Class Number: {class_number}")
-            print(f"Class Name: {class_name}")
-            print(f"Class Description: {class_description}")
-            print(f"Major: {class_major}")
-            print("-----------------------")
-            genEdResults.append(result)
-            gen_ed_class_names.add(class_name)
-
-    return render_template('submit_form.html', results=results, searchParam=searchParam, genEdResults=genEdResults, genEdSearchParam=genEdSearchParam)
+    return render_template('submit_form.html', majorResults=major_courses, majorSearchParam=interests, genEdResults=gen_ed_courses, genEdSearchParam=geInterests)
 
 if __name__ == '__main__':
     app.run(debug=True, port=8001)
