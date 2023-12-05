@@ -1,67 +1,98 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Search Results</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.4.1/dist/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+  <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js" integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.4.1/dist/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>    
+  <script src="https://cdn.jsdelivr.net/npm/cheerio"></script>
+  <title>Search Results</title>
 </head>
 <body>
-    <h1>Search Results for {{ majorSearchParam }} Classes Sorted by Course Number:</h1>
-    {% for result in majorResults  %}
-    <div>
-        <h2>Class Number: {{ result['Class Number'] }}</h2>
-        <p>Class Name: {{ result['Class Name'] }}</p>
-        <p>Class Description: {{ result['Class Description'] }}</p>
-        <p>Major: {{ result['Major'] }}</p>
-        <p>We recommend you add this to year {{result['Year Number']}}.</p>
-        <button class="btn btn-primary add-to-schedule" data-class="{{ result['Class Number'] }}">Add to Schedule</button>
+    <!-- add header navigation bar -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+      <a class="navbar-brand" href="/">OSU Schedule Generator</a>
+      <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+    </nav>
+    <div class="container mt-3 mb-3">
+      <!-- path navigation -->
+      <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a href="/">Home Page</a></li>
+          <li class="breadcrumb-item active" aria-current="page">Course Searching Results</li>
+        </ol>
+      </nav>
+      <div class="card">
+        <div class="card-body text-warning font-weight-bold">
+          Search Results for {{ majorSearchParam }} Classes Sorted by Course Number:
+        </div>
+      </div>
+      <!-- the searching courses list -->
+      {% for result in majorResults %}
+        <div class="card">
+          <h3 class="card-header">Class Number: {{ result['Class Number'] }}</h3>
+          <p>Class Name: {{ result['Class Name'] }}</p>
+          <p>Class Description: {{ result['Class Description'] }}</p>
+          <p>Major: {{ result['Major'] }}</p>
+          <p>We recommend you add this to year {{result['Year Number']}}.</p>
+          <button class="btn btn-primary add-to-schedule" data-class="{{ result['Class Number'] }}">Add to Schedule</button>
+        </div>
+      {% endfor %}
+      <!-- Non-major classes part -->
+      <div class="card mt-5">
+        <div class="card-body text-warning font-weight-bold">
+          Search Results for {{ genEdSearchParam }} Non-Major Classes Sorted by Course Number:
+        </div>
+      </div>
+      <!-- the searching non-major courses list -->
+      {% for result in genEdResults %}
+        <div class="card mt-3">
+          <h3 class="card-header">Class Number: {{ result['Class Number'] }}</h3>
+          <p>Class Name: {{ result['Class Name'] }}</p>
+          <p>Class Description: {{ result['Class Description'] }}</p>
+          <p>Major: {{ result['Major'] }}</p>
+          <p>We recommend you add this to year {{result['Year Number']}}.</p>
+          <button class="btn btn-primary add-to-schedule" data-class="{{ result['Class Number'] }}">Add to Schedule</button>
+        </div>
+      {% endfor %}
     </div>
-    {% endfor %}
-
-    <h2>Search Results for {{ genEdSearchParam }} Non-Major Classes Sorted by Course Number:</h2>
-    {% for result in genEdResults %}
-    <div>
-        <h2>Class Number: {{ result['Class Number'] }}</h2>
-        <p>Class Name: {{ result['Class Name'] }}</p>
-        <p>Class Description: {{ result['Class Description'] }}</p>
-        <p>Major: {{ result['Major'] }}</p>
-        <p>We recommend you add this to year {{result['Year Number']}}.</p>
-        <button class="btn btn-primary add-to-schedule" data-class="{{ result['Class Number'] }}">Add to Schedule</button>
-    </div>
-    {% endfor %}
-
+    
     <script>
-        document.querySelectorAll('.add-to-schedule').forEach(button => {
-            button.addEventListener('click', function() {
-                var classDiv = this.parentElement;
-                var classData = {
-                    classNumber: extractTextAfterColon(classDiv.querySelector("h2").innerText),
-                    className: extractTextAfterColon(classDiv.querySelectorAll("p")[0].innerText),
-                    classDescription: extractTextAfterColon(classDiv.querySelectorAll("p")[1].innerText),
-                    major: extractTextAfterColon(classDiv.querySelectorAll("p")[2].innerText),
-                    yearNumber: extractTextAfterColon(classDiv.querySelectorAll("p")[3].innerText).replace('.', '')
-                };
-    
-                // AJAX POST request to Flask
-                fetch('/add-to-schedule', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify(classData),
-                })
-                .then(response => response.json())
-                .then(data => {
-                    alert("Class added to schedule!");
-                })
-                .catch((error) => {
-                    console.error('Error:', error);
-                });
-            });
-        });
-    
-        function extractTextAfterColon(text) {
-            return text.substring(text.indexOf(':') + 1).trim();
-        }
+      document.querySelectorAll('.add-to-schedule').forEach(button => {
+          button.addEventListener('click', function() {
+              var classDiv = this.parentElement;
+              var classData = {
+                  classNumber: extractTextAfterColon(classDiv.querySelector("h3").innerText),
+                  className: extractTextAfterColon(classDiv.querySelectorAll("p")[0].innerText),
+                  classDescription: extractTextAfterColon(classDiv.querySelectorAll("p")[1].innerText),
+                  major: extractTextAfterColon(classDiv.querySelectorAll("p")[2].innerText),
+                  yearNumber: extractTextAfterColon(classDiv.querySelectorAll("p")[3].innerText).replace('.', '')
+              };
+  
+              // AJAX POST request to Flask
+              fetch('/add-to-schedule', {
+                  method: 'POST',
+                  headers: {
+                      'Content-Type': 'application/json',
+                  },
+                  body: JSON.stringify(classData),
+              })
+              .then(response => response.json())
+              .then(data => {
+                  alert("Class added to schedule!");
+              })
+              .catch((error) => {
+                  console.error('Error:', error);
+              });
+          });
+      });
+  
+      function extractTextAfterColon(text) {
+          return text.substring(text.indexOf(':') + 1).trim();
+      }
     </script>
-    
 </body>
 </html>

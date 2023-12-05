@@ -15,49 +15,66 @@
     <title>OSU Schedule Generator</title>
 </head>
 <body>
+    <!-- add header navigation bar -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+      <a class="navbar-brand" href="/">OSU Schedule Generator</a>
+      <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+    </nav>
     <div class="container mt-5">
-        <h1 class="mb-4">OSU Schedule Generator</h1>
-        <div class="row">
-            <div class="col-md-6 border-end">
-                
-                  <form id="myForm" action="/submit_form" method="POST">
-                    <div class="form-group">
-                        <label for="numYears">Number of Years:</label>
-                        <input type="range" 
-                          class="form-control-range" 
-                          min="1" max="4"
-                          id="numYears"
-                          name="numYears"
-                          onChange="document.getElementById('rangeval').innerText = document.getElementById('numYears').value">
-
-                        <span id="rangeval">3<!-- Default value --></span>
-
-                    </div>
-                    <div class="mb-3">
-                        <h2>Select a Major</h2>
-                        <select id="majorDropdown" name="majorDropdown" class="form-select">
-                            <option value="" disabled selected>Select a major</option>
-                        </select>
-                    </div>
-                    <div class="mb-3">
-                        <label for="textInterests" class="form-label">Enter any interests / hobbies (Comma separated):</label>
-                        <input type="text" class="form-control" id="textInterests" name="textInterests">
-                    </div>
-                    <h3>Non Major</h3>
-                    <div class="mb-3">
-                        <label for="geInterests" class="form-label">Enter any interests / hobbies (Comma separated):</label>
-                        <input type="text" class="form-control" id="geInterests" name="geInterests">
-                    </div>
-                    <button type="submit" class="btn btn-primary">Generate Classes</button>
-                </form>
-            </div>
+      <div class="card">
+        <div class="card-header">
+          OSU Class Search Engine
         </div>
-        <a href="generated_schedule.html" target="_blank">Generated Schedule</a>
+        <div class="card-body">
+          <form id="myForm" action="/submit_form" method="POST">
+              <div class="form-group">
+                  <label for="numYears">Number of Years:</label>
+                  <select name="numYears" id="numYears" class="form-control">
+                    <option value="1">One Year</option>
+                    <option value="2">Two Years</option>
+                    <option value="3">Three Years</option>
+                    <option value="4">Four Years</option>
+                  </select>
+                  <!-- <input type="number" class="form-control" name="numYears" id="numYears" min="1" max="4"> -->
+                  <!-- <input type="range" 
+                    class="form-control-range" 
+                    min="1" max="4"
+                    id="numYears"
+                    name="numYears"
+                    onChange="document.getElementById('rangeval').innerText = document.getElementById('numYears').value">
+                  <span id="rangeval">3</span> -->
+              </div>
+              <h4 class="card-header">For Major Classes</h4>
+              <div class="form-group">
+                  <label for="majorDropdown">Select a Major</label>
+                  <select id="majorDropdown" name="majorDropdown" class="form-control">
+                    <option value="" disabled selected>Select a major</option>
+                  </select>
+              </div>
+              <div class="form-group">
+                  <label for="textInterests">Enter any interests / hobbies (Comma separated):</label>
+                  <input class="form-control" type="text" class="form-control" id="textInterests" name="textInterests">
+              </div>
+              <h4 class="card-header">For Non Major Classes</h4>
+              <div class="form-group">
+                  <label for="geInterests">Enter any interests / hobbies (Comma separated):</label>
+                  <input type="text" class="form-control" id="geInterests" name="geInterests">
+              </div>
+              <div class="form-group">
+                <button type="submit" class="btn btn-warning">Generate Classes</button>
+              </div>
+              <div class="form-group">
+                <a href="generated_schedule.html" target="_blank">Generated Schedule</a>
+              </div>
+          </form>
+        </div>
+      </div>
     </div>
-    
-
-
-
+    <div class="container mt-5">
+        <h1 class="mb-4"></h1>
+    </div>
     <script type="module" src="scrape.js"></script>
     <script>
         const majorDropdown = document.getElementById("majorDropdown");
